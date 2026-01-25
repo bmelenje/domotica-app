@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Domótica ESP32</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header>
+    <h1>🏠 Domótica</h1>
+    <p>Control inteligente del hogar</p>
+  </header>
+
+  <!-- LUCES -->
+  <section class="card">
+    <h2>💡 Luces</h2>
+    <div class="buttons-row">
+      <button id="btnLed1">Sala</button>
+      <button id="btnLed2">Cocina</button>
+      <button id="btnLed3">Habitación</button>
+    </div>
+  </section>
+
+  <!-- MODO -->
+  <section class="card">
+    <h2>⚙️ Modo</h2>
+    <div class="buttons-row">
+      <button id="btnManual" class="mode-btn">Manual</button>
+      <button id="btnAuto" class="mode-btn">Automático</button>
+    </div>
+  </section>
+
+  <!-- SENSORES -->
+  <section class="card sensors">
+    <h2>🌡️ Sensores</h2>
+
+    <div class="sensor-box">
+      <div>
+        <span class="label">Temperatura</span>
+        <span class="value"><span id="temp">--</span> °C</span>
+      </div>
+      <div>
+        <span class="label">Humedad</span>
+        <span class="value"><span id="hum">--</span> %</span>
+      </div>
+    </div>
+
+    <button id="btnActualizar" class="full-btn">Actualizar</button>
+  </section>
+
+  <!-- VENTILADOR -->
+  <section class="card">
+    <h2>🌬️ Ventilador</h2>
+    <button id="btnFan" class="full-btn">Encender / Apagar</button>
+  </section>
+
+  <!-- PUERTA -->
+  <section class="card">
+    <h2>🚪 Puerta</h2>
+    <p class="subtitle">Ingrese contraseña para abrir</p>
+
+    <input
+      type="password"
+      id="inputPass"
+      placeholder="Contraseña"
+    />
+
+    <button id="btnAbrirPuerta" class="full-btn danger">
+      Abrir puerta
+    </button>
+  </section>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

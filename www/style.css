@@ -1,0 +1,150 @@
+* {
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  min-height: 100vh;
+  color: #333;
+}
+
+header {
+  text-align: center;
+  color: white;
+  margin-bottom: 30px;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 32px;
+}
+
+header p {
+  margin: 5px 0 0;
+  opacity: 0.9;
+}
+
+.card {
+  background: white;
+  border-radius: 18px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.card h2 {
+  margin: 0 0 15px;
+  font-size: 20px;
+}
+
+.buttons-row {
+  display: flex;
+  gap: 12px;
+}
+
+button {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  background: #e0e7ff;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+}
+
+button.active,
+button.mode-active {
+  background: #667eea;
+  color: white;
+}
+
+.full-btn {
+  width: 100%;
+  margin-top: 15px;
+  background: #667eea;
+  color: white;
+}
+
+.full-btn:hover {
+  background: #5a67d8;
+}
+
+.full-btn.danger {
+  background: #ef5350;
+}
+
+.full-btn.danger:hover {
+  background: #e53935;
+}
+
+.sensors .sensor-box {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.label {
+  font-size: 14px;
+  color: #777;
+}
+
+.value {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+input {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  margin-top: 10px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #666;
+}
+
+.toast {
+  position: fixed;
+  bottom: 25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #323232;
+  color: white;
+  padding: 14px 22px;
+  border-radius: 14px;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: 9999;
+}
+
+.toast.show {
+  opacity: 1;
+}
+
+.disabled-style {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(80%);
+    pointer-events: none;
+    user-select: none;
+}
+
+.mode-active {
+    background-color: #2dd36f !important;
+    color: white;
+    box-shadow: 0 0 10px rgba(45, 211, 111, 0.5);
+}
