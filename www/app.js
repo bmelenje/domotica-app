@@ -3,7 +3,7 @@
  * 1. CONFIGURACIÓN Y CONSTANTES
  * ============================================================
  */
-const ESP32_IP = "http://192.168.143.106";
+let ESP32_IP = localStorage.getItem("esp32_ip_saved") || "";
 const CONTRASENA = "1234";
 
 /**
@@ -11,6 +11,11 @@ const CONTRASENA = "1234";
  * 2. REFERENCIAS AL DOM (BOTONES Y ELEMENTOS)
  * ============================================================
  */
+
+const lblIpActual = document.getElementById("lblIpActual");
+const inputIp = document.getElementById("inputIp");
+const btnGuardarIp = document.getElementById("btnGuardarIp");
+
 // Luces
 const btnLed1 = document.getElementById("btnLed1");
 const btnLed2 = document.getElementById("btnLed2");
@@ -38,6 +43,41 @@ const toastElement = document.getElementById("toast");
  * 3. ESCUCHA DE EVENTOS (LISTENERS)
  * ============================================================
  */
+
+document.addEventListener("DOMContentLoaded", () => {
+    if (ESP32_IP) {
+        lblIpActual.textContent = ESP32_IP;
+        // Poner en el input la IP limpia (sin http://) para facilitar edición
+        inputIp.value = ESP32_IP.replace("http://", "");
+    } else {
+        lblIpActual.textContent = "Sin configurar";
+        showToast("⚠️ Configure la IP primero");
+    }
+});
+
+btnGuardarIp.addEventListener("click", () => {
+    let rawIp = inputIp.value.trim();
+
+    if (!rawIp) {
+        showToast("Escriba una IP válida");
+        return;
+    }
+
+    // Auto-completar http:// si el usuario lo olvidó
+    if (!rawIp.startsWith("http://")) {
+        rawIp = "http://" + rawIp;
+    }
+
+    // 1. Actualizar variable en memoria RAM
+    ESP32_IP = rawIp;
+    // 2. Guardar en disco (LocalStorage) para el futuro
+    localStorage.setItem("esp32_ip_saved", ESP32_IP);
+    
+    // 3. Actualizar interfaz visual
+    lblIpActual.textContent = ESP32_IP;
+    showToast("IP Guardada Correctamente ✅");
+});
+
 // Eventos de Luces
 btnLed1.addEventListener("click", () => toggleLight(btnLed1, 1));
 btnLed2.addEventListener("click", () => toggleLight(btnLed2, 2));
