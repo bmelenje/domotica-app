@@ -6,9 +6,7 @@
 #include "DHT.h"
 #include <ESP32Servo.h>
 
-IPAddress local_IP(10, 149, 236, 244); 
-IPAddress gateway(10, 149, 236, 10);  
-IPAddress subnet(255, 255, 255, 0);
+// --- ELIMINADAS LAS IPS ESTÁTICAS ---
 
 // 1. CONFIGURACIÓN
 const char* ssid = "Redmi 14C";
@@ -70,41 +68,48 @@ void initHardware() {
   SPI.begin();
   rfid.PCD_Init();
   dht.begin();
-  /* lcd.init();
-  lcd.backlight(); */
 }
 
-/* void initNetwork() {
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) { delay(500); Serial.print("."); }
-  Serial.println("\nConectado. IP: " + WiFi.localIP().toString());
-} */
-
+// NUEVA FUNCIÓN DE RED (DINÁMICA)
 void initNetwork() {
-  if (!WiFi.config(local_IP, gateway, subnet)) {
-    Serial.println("Error IP Estática");
-  }
   WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) { delay(500); Serial.print("."); }
-  Serial.println("\nConectado. IP: " + WiFi.localIP().toString());
+  
+  Serial.print("Conectando a ");
+  Serial.println(ssid);
+  
+  int counter = 0;
+  while (WiFi.status() != WL_CONNECTED) { 
+    delay(500); 
+    Serial.print("."); 
+    // Mostrar progreso en LCD
+    lcd.setCursor(counter % 16, 1);
+    lcd.print(".");
+    counter++;
+  }
+  
+  // Al conectar, mostramos la IP asignada por DHCP
+  String ipActual = WiFi.localIP().toString();
+  Serial.println("\nConectado con éxito!");
+  Serial.println("IP Asignada: " + ipActual);
+  
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("IP Asignada:");
+  lcd.setCursor(0, 1);
+  lcd.print(ipActual); // Esto te permite ver la IP sin el PC
+  delay(3000);
 }
 
 // 4. LÓGICA AUTOMÁTICA
 void handleRfidAuto() {
-  // Si no hay una tarjeta nueva presente o no se puede leer, salimos de la función
   if (!rfid.PICC_IsNewCardPresent() || !rfid.PICC_ReadCardSerial()) return;
 
-  // Imprimimos el encabezado del mensaje
   Serial.print(">> [RFID]: Tarjeta detectada. UID:");
-
-  // Recorremos los bytes del UID (usualmente 4)
   for (byte i = 0; i < rfid.uid.size; i++) {
-    // Si el byte es menor a 16 (0x10), añadimos un 0 a la izquierda para mantener el formato
     Serial.print(rfid.uid.uidByte[i] < 0x10 ? " 0" : " ");
-    // Imprimimos el byte en formato Hexadecimal
     Serial.print(rfid.uid.uidByte[i], HEX);
   }
-  Serial.println(); // Salto de línea al terminar de imprimir el ID
+  Serial.println();
 
   bool isAuthorized = true;
   for (byte i = 0; i < 4; i++) {
@@ -126,22 +131,10 @@ void handleRfidAuto() {
   rfid.PCD_StopCrypto1();
 }
 
-/* void handlePresenciaAuto() {
-  digitalWrite(PIN_LED1, digitalRead(PIN_PIR));
-} */
-
 void handleLuzAuto() {
   int valorLuz = analogRead(PIN_LDR);
-  // Si el valor sube de 1500 (puedes ajustarlo), enciende la luz.
-  // Como tus lecturas base son 125, 1500 es un margen seguro para "oscuridad".
-  static int ultimoValorLDR = 0;
-  if(abs(valorLuz - ultimoValorLDR) > 200) {
-    Serial.print(">> [LDR]: Valor actual: "); Serial.println(valorLuz);
-    ultimoValorLDR = valorLuz;
-  }
   if (valorLuz > 1500) {
     digitalWrite(PIN_LED1, HIGH);
-    Serial.println(">> [MODO AUTO]: Oscuridad detectada - LED ON");
   } else {
     digitalWrite(PIN_LED1, LOW);
   }
@@ -161,7 +154,6 @@ void handleClimaAuto() {
 
 void runAutomaticLogic() {
   handleRfidAuto();
-  //handlePresenciaAuto();
   handleLuzAuto();
   handleClimaAuto();
 }
@@ -178,59 +170,56 @@ void setupRoutes() {
     sendCORS(200, "MODO MANUAL ACTIVADO"); 
   });
 
-  // --- LED 1 ---
   server.on("/led/1/on", []() { 
     if(!isAutoMode) { digitalWrite(PIN_LED1, HIGH); sendCORS(200, "LED 1 ON"); }
     else sendCORS(403, "Error: Modo Auto Activo");
   });
+  
   server.on("/led/1/off", []() { 
     if(!isAutoMode) { digitalWrite(PIN_LED1, LOW); sendCORS(200, "LED 1 OFF"); }
     else sendCORS(403, "Error: Modo Auto Activo");
   });
 
-  // --- LED 2 ---
   server.on("/led/2/on", []() { 
     if(!isAutoMode) { digitalWrite(PIN_LED2, HIGH); sendCORS(200, "LED 2 ON"); }
     else sendCORS(403, "Error: Modo Auto Activo");
   });
+
   server.on("/led/2/off", []() { 
     if(!isAutoMode) { digitalWrite(PIN_LED2, LOW); sendCORS(200, "LED 2 OFF"); }
     else sendCORS(403, "Error: Modo Auto Activo");
   });
 
-  // --- LED 3 ---
   server.on("/led/3/on", []() { 
     if(!isAutoMode) { digitalWrite(PIN_LED3, HIGH); sendCORS(200, "LED 3 ON"); }
     else sendCORS(403, "Error: Modo Auto Activo");
   });
+
   server.on("/led/3/off", []() { 
     if(!isAutoMode) { digitalWrite(PIN_LED3, LOW); sendCORS(200, "LED 3 OFF"); }
     else sendCORS(403, "Error: Modo Auto Activo");
   });
 
-  // --- FAN ---
   server.on("/fan/on", []() { 
     if(!isAutoMode) { digitalWrite(PIN_FAN, LOW); sendCORS(200, "FAN ON"); }
     else sendCORS(403, "Error: Modo Auto Activo");
   });
+
   server.on("/fan/off", []() { 
     if(!isAutoMode) { digitalWrite(PIN_FAN, HIGH); sendCORS(200, "FAN OFF"); }
     else sendCORS(403, "Error: Modo Auto Activo");
   });
 
-  // --- PUERTA ---
   server.on("/puerta/abrir", []() { 
     abrirPuertaAction(); 
     sendCORS(200, "PUERTA ABIERTA"); 
   });
 
-  // --- BUZZER ERROR ---
   server.on("/buzzer/error", []() { 
     activarBuzzerDenegado(); 
     sendCORS(200, "BUZZER ERROR"); 
   });
 
-  // --- SENSOR ---
   server.on("/sensor", []() {
     String json = "{\"temperature\":" + String(dht.readTemperature(),1) + 
                   ",\"humidity\":" + String(dht.readHumidity(),1) + "}";
@@ -246,44 +235,40 @@ void setup() {
   lcd.init();
   lcd.backlight();
   lcd.setCursor(0, 0);
-  lcd.print("Cargando...");
-  delay(1000);
+  lcd.print("Iniciando...");
 
   initHardware();
-  lcd.setCursor(0, 1);
-  lcd.print("Hardware OK");
-  delay(1000);
-
+  
   lcd.clear();
-  lcd.print("Conectando WiFi");
-  initNetwork();
+  lcd.print("WiFi: " + String(ssid));
+  initNetwork(); // Aquí se asignará la IP dinámica
 
   setupRoutes();
   server.begin();
 
   lcd.clear();
   lcd.print("Sistema Listo");
-  delay(500);
+  lcd.setCursor(0, 1);
+  lcd.print(WiFi.localIP().toString());
+  delay(2000);
 }
 
 void loop() {
   server.handleClient();
 
-  static bool lastMode = isAutoMode; // Variable estática que recuerda el estado anterior
+  static bool lastMode = isAutoMode;
 
-  if (isAutoMode != lastMode) { // Solo entra aquí si el estado actual es distinto al anterior
-    Serial.println("------------------------------------");
-    Serial.print(">> [CAMBIO DE ESTADO]: ");
+  if (isAutoMode != lastMode) {
     if (isAutoMode) {
-      Serial.println("MODO AUTOMÁTICO ACTIVADO");
+      Serial.println("MODO AUTOMÁTICO");
+      // Mejora recomendada: resetear sensores al volver a modo auto
+      SPI.begin();
+      rfid.PCD_Init();
     } else {
-      Serial.println("MODO MANUAL ACTIVADO");
+      Serial.println("MODO MANUAL");
     }
-    Serial.println("------------------------------------");
-    
-    lastMode = isAutoMode; // Actualizamos el último estado conocido
+    lastMode = isAutoMode;
   }
-
 
   if (isAutoMode) {
     runAutomaticLogic();
